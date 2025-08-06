@@ -1,0 +1,120 @@
+{
+  "application.shellEnvironmentResolutionTimeout": "45",
+  "chat.modeFilesLocations": {
+    "chatmodes": true
+  },
+  "chat.promptFilesLocations": {
+    "prompts": true
+  },
+  "chat.instructionsFilesLocations": {
+    "instructions": true
+  },
+  "chat.tools.autoApprove": true,
+  "dotnetAcquisitionExtension.existingDotnetPath": [
+    {
+      "extensionId": "MS-CST-E.vscode-devskim",
+      "path": "/usr/lib/dotnet/dotnet"
+    },
+    {
+      "extensionId": "ms-azuretools.vscode-azure-github-copilot",
+      "path": "/usr/lib/dotnet/dotnet"
+    }
+  ],
+  "dotnetAcquisitionExtension.sharedExistingDotnetPath": "/usr/lib/dotnet",
+  "workbench.colorTheme": "Visual Studio Dark",
+  "workbench.editor.enablePreview": false,
+  "workbench.startupEditor": "none",
+  "workbench.tips.enabled": false,
+  "workbench.welcomePage.walkthroughs.openOnInstall": false,
+  "workbench.welcomePage.enabled": false,
+  "files.autoSave": "onWindowChange",
+  "extensions.ignoreRecommendations": false,
+  "extensions.autoUpdate": true,
+  "update.showReleaseNotes": false,
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "[markdown]": {
+    "files.trimTrailingWhitespace": true,
+    "editor.formatOnSave": true
+  },
+  "files.associations": {
+    "*.chatmode.md": "markdown",
+    "*.instructions.md": "markdown",
+    "*.prompt.md": "markdown"
+  },
+  "terminal.integrated.defaultProfile.linux": "zsh",
+  "terminal.integrated.profiles.linux": {
+    "bash": {
+      "path": "/bin/bash"
+    },
+    "pwsh": {
+      "path": "/opt/microsoft/powershell/7/pwsh"
+    },
+    "tmux": {
+      "path": "/usr/bin/tmux",
+      "args": [
+        "new-session",
+        "-A",
+        "-s",
+        "vscode:${workspaceFolder}"
+      ]
+    },
+    "zsh": {
+      "path": "/usr/bin/zsh"
+    }
+  },
+  "remote.portForwarding.useLocalServer": true,
+  "remote.autoForwardPorts": true,
+  "remote.autoForwardPortsSource": "output",
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    {
+      "text": "Use the Conventional Commits format: <type>[optional scope]: <gitmoji> <imperative description>"
+    },
+    {
+      "text": "Allowed types: feat, fix, docs, style, refactor, perf, test, chore, ci"
+    },
+    {
+      "text": "Common scopes: api, ui, auth, config, deps, tests, ci, docs, core, utils"
+    },
+    {
+      "text": "Use imperative mood in the subject line: 'Add feature' not 'Added feature'"
+    },
+    {
+      "text": "Keep subject line concise: under 50 characters, no trailing period"
+    },
+    {
+      "text": "Use an appropriate gitmoji to enhance readability (e.g., ✨, 🐛, 🔧, 📝)"
+    },
+    {
+      "text": "Include a scope in parentheses if relevant (e.g., api, ui, auth)"
+    },
+    {
+      "text": "For breaking changes: Add '!' after type/scope and 'BREAKING CHANGE:' in body"
+    },
+    {
+      "text": "Add an optional body with bullet points for context or motivation"
+    },
+    {
+      "text": "Reference issues using syntax like: Refs #123 or Closes #456"
+    },
+    {
+      "text": "Example: feat(api): ✨ Add JWT token authentication"
+    },
+    {
+      "text": "Example: fix(ui): 🐛 Fix button alignment on mobile"
+    },
+    {
+      "text": "Example: docs(readme): 📝 Update installation instructions"
+    },
+    {
+      "text": "Example: refactor(auth): 🔨 Simplify token refresh logic"
+    },
+    {
+      "text": "Example: feat(api)!: ✨ Change authentication method"
+    },
+    {
+      "text": "Example with body: feat(auth): ✨ Add OAuth2 support\n\n- Implement Google OAuth2 provider\n- Add user session management\n- Update security policies\n\nCloses #123"
+    }
+  ]
+}

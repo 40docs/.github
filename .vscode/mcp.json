@@ -1,0 +1,93 @@
+{
+  "servers": {
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/"
+    },
+    "Perplexity": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["perplexity-mcp"],
+      "env": {
+        "PERPLEXITY_API_KEY": "${input:perplexity-api-key}",
+        "PERPLEXITY_MODEL": "sonar"
+      }
+    },
+    "git": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--mount",
+        "type=bind,src=${workspaceFolder},dst=/workspace",
+        "mcp/git"
+      ]
+    },
+    "time": {
+      "command": "docker",
+      "args": ["run", "-i", "mcp/time"]
+    },
+    "memory": {
+      "command": "docker",
+      "args": ["run", "-i", "-v", "claude-memory:/app/dist", "mcp/memory"]
+    },
+    "sequential-thinking": {
+      "command": "docker",
+      "args": ["run", "-i", "mcp/sequentialthinking"]
+    },
+    "filesystem": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--mount",
+        "type=bind,src=${workspaceFolder},dst=/projects/workspace",
+        "mcp/filesystem",
+        "/projects"
+      ]
+    },
+    "kubernetes": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "kubernetes-mcp-server@latest"]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"]
+    },
+    "terraform": {
+      "type": "stdio",
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "hashicorp/terraform-mcp-server:latest"]
+    },
+    "azure": {
+      "type": "stdio",
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "node:20-bookworm",
+        "sh",
+        "-c",
+        "npx -y @azure/mcp@latest server start"
+      ]
+    },
+    "microsoft-docs": {
+      "type": "http",
+      "url": "https://learn.microsoft.com/api/mcp"
+    },
+    "markitdown": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["markitdown-mcp"]
+    }
+  },
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "perplexity-api-key",
+      "description": "Perplexity API Key",
+      "password": true
+    }
+  ]
+}
