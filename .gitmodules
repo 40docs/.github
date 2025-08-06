@@ -1,12 +1,12 @@
 [submodule "infrastructure"]
-  path = infrastructure
-  url = https://github.com/40docs/infrastructure.git
+	path = infrastructure
+	url = https://github.com/40docs/infrastructure.git
 
 [submodule "dotfiles"]
-  path = dotfiles
-  url = https://github.com/40docs/dotfiles.git
+	path = dotfiles
+	url = https://github.com/40docs/dotfiles.git
 
 [submodule "hydration"]
-  path = hydration
-  url = https://github.com/40docs/hydration.git
+	path = hydration
+	url = https://github.com/40docs/hydration.git
 
