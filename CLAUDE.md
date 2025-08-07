@@ -64,6 +64,8 @@ az aks get-credentials --resource-group 40docs --name 40docs_k8s-cluster_eastus 
 - **Azure Kubernetes Service**: Production AKS cluster with GitOps (Flux)
 - **Multi-Environment**: Development/staging/production configurations
 - **Security-First**: Lacework monitoring, cert-manager, RBAC enabled
+- **Application-Specific Resources**: Each app gets dedicated public IP via FortiWeb VIP
+- **DNS Integration**: Automatic CNAME record creation for application access
 
 ## Important Coding Guidelines
 
@@ -78,6 +80,8 @@ az aks get-credentials --resource-group 40docs --name 40docs_k8s-cluster_eastus 
 - **Resource Naming**: Use underscores for consistency with Terraform conventions
 - **Template Variables**: All cloud-init template variables use lowercase `snake_case`
 - **Local Testing**: Use `terraform init -backend=false` for local validation
+- **Provider Versions**: All providers have specific version constraints (see terraform.tf:14-63)
+- **Variable Validation**: Extensive input validation with regex patterns for IPs, subnets, and domains
 
 ### Security Best Practices
 - **No Secrets in Code**: Never commit API keys, tokens, or credentials
@@ -149,12 +153,14 @@ The `infrastructure.sh` script (2,100+ lines) is the master orchestrator that:
 
 ## Key Applications
 
-| Application | Purpose | Status | Namespace |
-|-------------|---------|--------|-----------|
-| docs | Documentation hosting | ✅ Running | docs |
-| dvwa | Security testing | ✅ Running | dvwa |
-| extractor | Data processing | ✅ Running | extractor |
-| ollama | AI/ML workloads | ⏸️ Disabled | N/A |
+| Application | Purpose | Status | Namespace | Terraform File |
+|-------------|---------|--------|-----------|----------------|
+| docs | Documentation hosting | ✅ Running | docs | spoke-k8s_application-docs.tf |
+| dvwa | Security testing | ✅ Running | dvwa | spoke-k8s_application-dvwa.tf |
+| extractor | Data processing | ✅ Running | extractor | spoke-k8s_application-extractor.tf |
+| ollama | AI/ML workloads | ⏸️ Disabled | N/A | spoke-k8s_application-ollama.tf |
+| artifacts | Build artifacts | ⏸️ Disabled | N/A | spoke-k8s_application-artifacts.tf |
+| video | Media streaming | ⏸️ Disabled | N/A | spoke-k8s_application-video.tf |
 
 ## Troubleshooting
 
