@@ -1,17 +1,17 @@
 
+[submodule "dotfiles"]
+	path = dotfiles
+	url = https://github.com/40docs/dotfiles.git
+	branch = main
+
 [submodule "infrastructure"]
 	path = infrastructure
 	url = https://github.com/40docs/infrastructure.git
 	branch = main
 
-[submodule "webhook"]
-	path = webhook
-	url = https://github.com/40docs/webhook.git
-	branch = main
-
-[submodule "dotfiles"]
-	path = dotfiles
-	url = https://github.com/40docs/dotfiles.git
+[submodule "devcontainer-templates"]
+	path = devcontainer-templates
+	url = https://github.com/40docs/devcontainer-templates.git
 	branch = main
 
 [submodule "hydration"]
@@ -19,9 +19,9 @@
 	url = https://github.com/40docs/hydration.git
 	branch = main
 
-[submodule "devcontainer-templates"]
-	path = devcontainer-templates
-	url = https://github.com/40docs/devcontainer-templates.git
+[submodule "webhook"]
+	path = webhook
+	url = https://github.com/40docs/webhook.git
 	branch = main
 
 [submodule "az-decompile"]
