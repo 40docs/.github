@@ -41,18 +41,42 @@ for REPO in "${REPOS[@]}"; do
 
 EOF
 
-  # Add the submodule if not already present
+  # Add submodule if not already present
   if [[ ! -d "$REPO/.git" && ! -e "$REPO" ]]; then
     git submodule add -b main "https://github.com/$ORG/$REPO.git" "$REPO" || true
   fi
 done
 
-# Sync & update
-echo "🔄 Syncing submodules..."
+# Sync & update submodules
+echo "🔄 Syncing and initializing submodules..."
 git submodule sync
 git submodule update --init --recursive
 
+# Ensure each submodule is tracking and checked out to 'main'
+for REPO in "${REPOS[@]}"; do
+  if [[ "$REPO" == "$CURRENT_REPO" ]]; then
+    continue
+  fi
+
+  if [[ -d "$REPO/.git" ]]; then
+    echo "🛠  Ensuring '$REPO' is on main branch..."
+    (
+      cd "$REPO"
+      git fetch origin main
+
+      # Checkout or create 'main' branch tracking origin/main
+      if git show-ref --verify --quiet refs/heads/main; then
+        git checkout main
+      else
+        git checkout -b main origin/main
+      fi
+
+      git pull origin main
+    )
+  fi
+done
+
 # Write lock file
 date > "$LOCK_FILE"
-echo "✅ .gitmodules updated and submodules initialized."
+echo "✅ .gitmodules updated, submodules initialized, and all are on main."
 
