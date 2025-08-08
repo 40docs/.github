@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: '*/15 * * * *'
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   sync-submodules:
     runs-on: ubuntu-latest
@@ -16,42 +20,60 @@ jobs:
           submodules: recursive
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up GitHub CLI
-        run: |
-          sudo apt update
-          sudo apt install -y gh
-          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
-
       - name: Run install.sh to sync submodules
         run: |
           chmod +x ./install.sh
           ./install.sh
 
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Create and switch to new branch
+        if: steps.changes.outputs.has_changes == 'true'
         id: branch
         run: |
           BRANCH="sync-submodules-$(date +'%Y%m%d-%H%M')"
-          git checkout -b "$BRANCH"
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          git checkout -b "$BRANCH"
 
       - name: Commit submodule changes
+        if: steps.changes.outputs.has_changes == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .gitmodules .gitmodules.lock dotfiles hydration infrastructure || true
-          git commit -m "chore(submodules): sync via install.sh" || echo "No changes to commit"
+          git commit -m "chore(submodules): sync via install.sh"
 
       - name: Push branch
+        if: steps.changes.outputs.has_changes == 'true'
         run: |
           git push origin HEAD
 
       - name: Create pull request
+        if: steps.changes.outputs.has_changes == 'true'
+        id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ steps.branch.outputs.branch }}
           title: 'chore(submodules): sync via install.sh'
-          body: |
-            Automated submodule sync using install.sh.
+          body: 'Automated submodule sync using install.sh.'
           base: main
+
+      # CLEANUP: if no PR was created (e.g., action skipped due to no diff),
+      # remove the temp branch locally and on origin.
+      - name: Cleanup temp branch if no PR
+        if: steps.changes.outputs.has_changes == 'true' && (steps.cpr.outputs.pull-request-number == '' || steps.cpr.outputs.pull-request-number == '0')
+        run: |
+          BRANCH="${{ steps.branch.outputs.branch }}"
+          echo "Deleting temp branch $BRANCH (no PR created)"
+          git checkout - || git checkout main
+          git branch -D "$BRANCH" || true
+          git push origin --delete "$BRANCH" || true
 
