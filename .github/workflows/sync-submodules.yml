@@ -1,40 +1,59 @@
 name: Sync Submodules to main
 
 on:
-  workflow_dispatch:        # Manual trigger
+  workflow_dispatch:
   schedule:
-    - cron: '*/15 * * * *'     # Optional: daily at 6 AM UTC
+    - cron: '*/15 * * * *'
 
 jobs:
   sync-submodules:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout parent repo with submodules
+      - name: Checkout repo with submodules
         uses: actions/checkout@v4
         with:
           submodules: recursive
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Checkout 'main' in each submodule
-        run: |
-          for dir in dotfiles hydration infrastructure; do
-            echo "🔁 Switching $dir to main..."
-            cd "$dir"
-            git fetch origin
-            git checkout main
-            git pull origin main
-            cd ..
-          done
+      - name: Set up GitHub CLI
+        uses: cli/gh-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Commit updated submodule SHAs
+      - name: Run install.sh to sync submodules
+        run: |
+          chmod +x ./install.sh
+          ./install.sh
+
+      - name: Create and switch to new branch
+        id: branch
+        run: |
+          BRANCH="sync-submodules-$(date +'%Y%m%d-%H%M')"
+          git checkout -b "$BRANCH"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Commit submodule changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add dotfiles hydration infrastructure
-          git commit -m "chore(submodules): update to latest main" || echo "No changes to commit"
+          git add .gitmodules .gitmodules.lock dotfiles hydration infrastructure || true
+          git commit -m "chore(submodules): sync via install.sh" || echo "No changes to commit"
 
-      - name: Push updated submodules to main
+      - name: Push branch
         run: |
           git push origin HEAD
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ steps.branch.outputs.branch }}
+          title: 'chore(submodules): sync via install.sh'
+          body: |
+            This PR was automatically created by the `install.sh` script to:
+            - Rebuild `.gitmodules`
+            - Sync all submodules to their `main` branches
+            - Commit changes to a new branch and open a PR against `main`
+          base: main
 
