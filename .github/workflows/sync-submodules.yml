@@ -17,9 +17,10 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up GitHub CLI
-        uses: cli/gh-action@v2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          sudo apt update
+          sudo apt install -y gh
+          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
       - name: Run install.sh to sync submodules
         run: |
@@ -51,9 +52,6 @@ jobs:
           branch: ${{ steps.branch.outputs.branch }}
           title: 'chore(submodules): sync via install.sh'
           body: |
-            This PR was automatically created by the `install.sh` script to:
-            - Rebuild `.gitmodules`
-            - Sync all submodules to their `main` branches
-            - Commit changes to a new branch and open a PR against `main`
+            Automated submodule sync using install.sh.
           base: main
 
