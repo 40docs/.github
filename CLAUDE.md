@@ -200,3 +200,8 @@ flux reconcile source git infrastructure
 - **Enhanced Logging**: Visual symbols for different message types improve readability
 - **Retry Logic**: Standardized retry patterns with exponential backoff throughout
 - **Input Validation**: Comprehensive validation for emails, GitHub orgs, Azure resources, DNS zones
+
+## Repository Security
+
+### Branch Protection
+- All github repository main branches are protected and require a pull request
