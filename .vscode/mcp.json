@@ -8,18 +8,6 @@
       "command": "docker",
       "args": ["run", "-i", "mcp/sequentialthinking"]
     },
-    "filesystem": {
-      "command": "docker",
-      "args": [
-        "run",
-        "-i",
-        "--mount",
-        "type=bind,src=${workspaceFolder},dst=/projects/workspace",
-        "mcp/filesystem",
-        "/projects"
-      ]
-    },
-
     "playwright": {
       "command": "npx",
       "args": ["@playwright/mcp@latest"]
@@ -28,18 +16,6 @@
       "type": "stdio",
       "command": "docker",
       "args": ["run", "-i", "--rm", "hashicorp/terraform-mcp-server:latest"]
-    },
-    "azure": {
-      "type": "stdio",
-      "command": "docker",
-      "args": [
-        "run",
-        "-i",
-        "node:20-bookworm",
-        "sh",
-        "-c",
-        "npx -y @azure/mcp@latest server start"
-      ]
     },
     "microsoft-docs": {
       "type": "http",
