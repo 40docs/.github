@@ -1,5 +1,16 @@
 {
   "servers": {
+    "Perplexity": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "perplexity-mcp"
+      ],
+      "env": {
+        "PERPLEXITY_API_KEY": "${input:perplexity-api-key}",
+        "PERPLEXITY_MODEL": "sonar"
+      }
+    },
     "memory": {
       "command": "docker",
       "args": ["run", "-i", "-v", "claude-memory:/app/dist", "mcp/memory"]
