@@ -94,6 +94,9 @@ echo "✅ .gitmodules updated, submodules initialized, and all are on 'main'."
 
 echo "🔁 Syncing all submodules to 'main' branch..."
 
+# Ensure submodules are synced with the new .gitmodules before foreach
+git submodule sync
+
 # Loop over each initialized submodule
 git submodule foreach '
   echo "🛠 Switching to main in $name"
