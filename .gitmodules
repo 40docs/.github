@@ -1,22 +1,22 @@
 
-[submodule "hydration"]
-	path = hydration
-	url = https://github.com/40docs/hydration.git
-	branch = main
-
 [submodule "infrastructure"]
 	path = infrastructure
 	url = https://github.com/40docs/infrastructure.git
 	branch = main
 
-[submodule "pebcak"]
-	path = pebcak
-	url = https://github.com/40docs/pebcak.git
-	branch = main
-
 [submodule "dotfiles"]
 	path = dotfiles
 	url = https://github.com/40docs/dotfiles.git
+	branch = main
+
+[submodule "hydration"]
+	path = hydration
+	url = https://github.com/40docs/hydration.git
+	branch = main
+
+[submodule "pebcak"]
+	path = pebcak
+	url = https://github.com/40docs/pebcak.git
 	branch = main
 
 [submodule "devcontainer-templates"]
