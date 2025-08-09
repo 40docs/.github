@@ -4,14 +4,14 @@
 	url = https://github.com/40docs/infrastructure.git
 	branch = main
 
-[submodule "mkdocs"]
-	path = mkdocs
-	url = https://github.com/40docs/mkdocs.git
-	branch = main
-
 [submodule "dotfiles"]
 	path = dotfiles
 	url = https://github.com/40docs/dotfiles.git
+	branch = main
+
+[submodule "mkdocs"]
+	path = mkdocs
+	url = https://github.com/40docs/mkdocs.git
 	branch = main
 
 [submodule "hydration"]
