@@ -1,1 +1,141 @@
 
+[submodule "infrastructure"]
+	path = infrastructure
+	url = https://github.com/40docs/infrastructure.git
+	branch = main
+
+[submodule "mkdocs"]
+	path = mkdocs
+	url = https://github.com/40docs/mkdocs.git
+	branch = main
+
+[submodule "dotfiles"]
+	path = dotfiles
+	url = https://github.com/40docs/dotfiles.git
+	branch = main
+
+[submodule "hydration"]
+	path = hydration
+	url = https://github.com/40docs/hydration.git
+	branch = main
+
+[submodule "pebcak"]
+	path = pebcak
+	url = https://github.com/40docs/pebcak.git
+	branch = main
+
+[submodule "devcontainer-templates"]
+	path = devcontainer-templates
+	url = https://github.com/40docs/devcontainer-templates.git
+	branch = main
+
+[submodule "webhook"]
+	path = webhook
+	url = https://github.com/40docs/webhook.git
+	branch = main
+
+[submodule "az-decompile"]
+	path = az-decompile
+	url = https://github.com/40docs/az-decompile.git
+	branch = main
+
+[submodule "video-producer-microservice"]
+	path = video-producer-microservice
+	url = https://github.com/40docs/video-producer-microservice.git
+	branch = main
+
+[submodule "video-as-code"]
+	path = video-as-code
+	url = https://github.com/40docs/video-as-code.git
+	branch = main
+
+[submodule "tts-microservices"]
+	path = tts-microservices
+	url = https://github.com/40docs/tts-microservices.git
+	branch = main
+
+[submodule "theme"]
+	path = theme
+	url = https://github.com/40docs/theme.git
+	branch = main
+
+[submodule "references"]
+	path = references
+	url = https://github.com/40docs/references.git
+	branch = main
+
+[submodule "pptx-extractor-microservice"]
+	path = pptx-extractor-microservice
+	url = https://github.com/40docs/pptx-extractor-microservice.git
+	branch = main
+
+[submodule "manifests-infrastructure"]
+	path = manifests-infrastructure
+	url = https://github.com/40docs/manifests-infrastructure.git
+	branch = main
+
+[submodule "manifests-applications"]
+	path = manifests-applications
+	url = https://github.com/40docs/manifests-applications.git
+	branch = main
+
+[submodule "landing-page"]
+	path = landing-page
+	url = https://github.com/40docs/landing-page.git
+	branch = main
+
+[submodule "lab-forticnapp-opal"]
+	path = lab-forticnapp-opal
+	url = https://github.com/40docs/lab-forticnapp-opal.git
+	branch = main
+
+[submodule "lab-forticnapp-code-security"]
+	path = lab-forticnapp-code-security
+	url = https://github.com/40docs/lab-forticnapp-code-security.git
+	branch = main
+
+[submodule "k8s-utilities"]
+	path = k8s-utilities
+	url = https://github.com/40docs/k8s-utilities.git
+	branch = main
+
+[submodule "hol-fortiappsec"]
+	path = hol-fortiappsec
+	url = https://github.com/40docs/hol-fortiappsec.git
+	branch = main
+
+[submodule "fortiweb-ingress"]
+	path = fortiweb-ingress
+	url = https://github.com/40docs/fortiweb-ingress.git
+	branch = main
+
+[submodule "helm-charts"]
+	path = helm-charts
+	url = https://github.com/40docs/helm-charts.git
+	branch = main
+
+[submodule "docs-forticnapp-opal-demo"]
+	path = docs-forticnapp-opal-demo
+	url = https://github.com/40docs/docs-forticnapp-opal-demo.git
+	branch = main
+
+[submodule "docs-forticnapp-code-security"]
+	path = docs-forticnapp-code-security
+	url = https://github.com/40docs/docs-forticnapp-code-security.git
+	branch = main
+
+[submodule "docs-builder"]
+	path = docs-builder
+	url = https://github.com/40docs/docs-builder.git
+	branch = main
+
+[submodule "devcontainer-features"]
+	path = devcontainer-features
+	url = https://github.com/40docs/devcontainer-features.git
+	branch = main
+
+[submodule "container-security-demo"]
+	path = container-security-demo
+	url = https://github.com/40docs/container-security-demo.git
+	branch = main
+
