@@ -112,6 +112,125 @@ The `infrastructure.sh` script (2,100+ lines) is the master orchestrator that:
 - **Azure DNS**: DNS-01 challenge resolution
 - **Workload Identity**: Secure Azure authentication
 
+## Claude Orchestrator System for Multi-Repository Development
+
+### Orchestrator Architecture
+The 40docs repository uses a sophisticated Claude orchestrator system where a main Claude instance in tmux window 0 controls and coordinates Claude sub-instances across all 25+ Git submodules. This enables intelligent multi-repository collaboration and workflow coordination.
+
+### Configuration Files
+- `~/.tmux.conf`: Main tmux configuration with orchestrator support
+- `~/.claude/commands`: Orchestrator slash commands and instructions
+- `~/.claude/ORCHESTRATOR.md`: Detailed orchestrator behavior instructions
+- `~/.claude/SUB_INSTANCE.md`: Sub-instance reporting and communication protocols
+- `~/.tmux/40docs-orchestrator-startup.sh`: Orchestrator startup script
+- `~/.tmux/scripts/`: Communication and management helper scripts
+- `./claude-tmux`: Repository orchestrator launcher (run from 40docs root)
+
+### Session Structure
+When launched, the orchestrator creates:
+1. **Window 0**: `orchestrator` - Main Claude orchestrator (control center)
+2. **Sub-Windows**: Created on-demand by orchestrator for each submodule
+3. **Communication Layer**: Shared logging system in `~/.tmux/logs/`
+4. **MCP Integration**: Cross-repository analysis and coordination
+
+### Orchestrator Workflow
+```bash
+# 1. Start Claude orchestrator system
+./claude-tmux
+
+# 2. Attach to orchestrator session
+tmux attach-session -t 40docs-claude
+
+# 3. In orchestrator window (window 0), spawn all sub-instances
+/spawn-all
+
+# 4. Monitor and coordinate across repositories
+/status-all                    # Get status from all instances
+/health-check                  # Verify system health
+/execute-distributed "task"    # Run task across repositories
+/coordinate-workflow "project" # Orchestrate complex workflows
+
+# 5. Sub-instances report automatically via shared logs
+# 6. Detach to keep orchestrator and all sub-instances running
+# Ctrl+b + d
+
+# 7. Later: Reconnect to active orchestrator session
+tmux attach-session -t 40docs-claude
+```
+
+### Navigation and Control
+```bash
+# Inside tmux session - navigate between components:
+# Ctrl+b + 0 : Orchestrator (main controller)
+# Ctrl+b + 1 : First spawned sub-instance (infrastructure)
+# Ctrl+b + 2 : Second spawned sub-instance (mkdocs)
+# ... and so on for all spawned submodules
+
+# Orchestrator commands:
+/spawn-all           # Create all sub-instances
+/status-all          # Aggregate status reports
+/health-check        # System health verification
+/sync-submodules     # Git submodule synchronization
+/execute-distributed # Cross-repository task execution
+/coordinate-workflow # Multi-repo workflow orchestration
+```
+
+### Communication System
+- **Orchestrator → Sub-instances**: Commands via tmux send-keys
+- **Sub-instances → Orchestrator**: Reports via shared log files
+- **Cross-repository**: Coordination through orchestrator mediation
+- **MCP Servers**: Advanced analysis and pattern detection across repos
+- **Automatic Reporting**: Progress, errors, completions, health pings
+
+### Critical Orchestrator Rule: No Direct File System Access
+**MANDATORY**: The orchestrator Claude instance must NEVER directly examine files in submodules. Instead:
+
+1. **Always Delegate**: When you need information about files in any subfolder/submodule, send the question to the Claude sub-instance running in that repository's tmux window
+2. **Communication Pattern**: Use `tmux send-keys -t "40docs-claude:$window_name" "$question" Enter` to ask the sub-instance
+3. **Wait for Response**: Monitor the sub-instance's log file or terminal output for their answer
+4. **Report Back**: Relay the sub-instance's response to coordinate the overall workflow
+
+### Tmux Communication Protocol
+**CRITICAL**: When communicating with Claude sub-instances in tmux windows, always use proper terminal formatting:
+
+```bash
+# ✅ CORRECT: Use Enter for proper newline/carriage return handling
+tmux send-keys -t "40docs-claude:window_name" "message text" Enter
+
+# ❌ INCORRECT: C-m may not work reliably in all tmux configurations
+tmux send-keys -t "40docs-claude:window_name" "message text" C-m
+```
+
+**Why this matters**:
+- Ensures proper message transmission to Claude instances
+- Handles newlines and carriage returns correctly
+- Provides consistent terminal behavior across environments
+- Prevents communication failures between orchestrator and sub-instances
+
+**CRITICAL REMINDER**: ALWAYS press Enter after sending messages to submodules. If a message appears to be waiting in the input prompt without being processed, send an additional Enter key to submit it:
+
+```bash
+# If message is stuck in prompt, send Enter to submit
+tmux send-keys -t "40docs-claude:window_name" Enter
+```
+
+**Examples**:
+- ❌ Wrong: Reading `infrastructure/main.tf` directly from orchestrator
+- ✅ Correct: Ask the infrastructure sub-instance "What are the current Terraform resources in main.tf?"
+
+- ❌ Wrong: Using Grep to search `mkdocs/` files from orchestrator
+- ✅ Correct: Ask the mkdocs sub-instance "Search for any references to 'theme' configuration"
+
+**Rationale**: Each sub-instance has specialized context and understanding of their repository. The orchestrator's role is coordination and communication, not direct file manipulation.
+
+### Benefits
+- **Intelligent Coordination**: Orchestrator manages complex multi-repo workflows
+- **Context Awareness**: Each sub-instance specializes in its repository
+- **Automated Communication**: Built-in reporting and status aggregation  
+- **Persistent Operation**: All instances survive disconnection
+- **MCP Integration**: Leverage advanced AI capabilities across repositories
+- **Scalable Management**: Efficiently coordinate 25+ repositories simultaneously
+
 ## Testing and Validation
 
 ### Local Development
