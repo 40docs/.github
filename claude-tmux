@@ -1,0 +1,47 @@
+#\!/bin/bash
+
+# Claude Code Orchestrator Launcher for 40docs
+# ============================================
+# Launches tmux session with Claude orchestrator in window 0
+# Orchestrator manages spawning Claude instances across all submodules
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ORCHESTRATOR_SCRIPT="$HOME/.tmux/40docs-orchestrator-startup.sh"
+
+# Check if we're in the 40docs repository
+if [[ ! -f "$SCRIPT_DIR/.gitmodules" ]] || [[ ! -f "$SCRIPT_DIR/CLAUDE.md" ]]; then
+    echo "Error: This script must be run from the 40docs repository root"
+    exit 1
+fi
+
+# Check if orchestrator script exists
+if [[ ! -f "$ORCHESTRATOR_SCRIPT" ]]; then
+    echo "Error: Orchestrator startup script not found at $ORCHESTRATOR_SCRIPT"
+    echo "Please ensure the tmux orchestrator setup is complete"
+    exit 1
+fi
+
+# Check if Claude commands file exists
+if [[ ! -f "$HOME/.claude/commands" ]]; then
+    echo "Error: Claude orchestrator commands file not found"
+    echo "Expected: $HOME/.claude/commands"
+    exit 1
+fi
+
+echo "🎼 Starting 40docs Claude Orchestrator..."
+echo "=========================================="
+echo ""
+echo "This will create:"
+echo "  - Tmux session: 40docs-claude"
+echo "  - Window 0: Claude orchestrator (main controller)"
+echo "  - Orchestrator will spawn Claude instances for each submodule"
+echo ""
+echo "Next steps after startup:"
+echo "  1. tmux attach-session -t 40docs-claude"
+echo "  2. In orchestrator window, run: /spawn-all"
+echo "  3. Use /status-all to monitor sub-instances"
+echo ""
+
+# Run the orchestrator startup script
+exec "$ORCHESTRATOR_SCRIPT"
+LAUNCHER_EOF < /dev/null

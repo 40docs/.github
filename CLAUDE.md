@@ -4,204 +4,237 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-This is the **40docs** platform - an enterprise-grade Documentation as Code ecosystem that manages 25+ interconnected repositories through Git submodules and automation. It's a multi-repository collection where each top-level folder represents a separate GitHub repository, not a monorepo structure.
+This is the **manifests-infrastructure** repository within the 40docs platform ecosystem. It contains Kubernetes infrastructure manifests managed via GitOps with Flux v2.
+
+### Infrastructure Components
+
+This repository manages the core infrastructure layer for the 40docs Kubernetes platform:
+
+- **Certificate Management**: cert-manager with Azure DNS integration for automated TLS certificates
+- **Ingress Control**: FortiWeb Kubernetes ingress controller for security-focused traffic routing
+- **Security Monitoring**: Lacework DaemonSet for runtime security and compliance monitoring
+- **Configuration Management**: Reloader for automatic config/secret updates
+- **Ingress Helper**: Supporting ingress configuration utilities
+- **GPU Operations**: NVIDIA GPU operator for ML/AI workloads (optional)
+- **cFOS Integration**: Container-based FortiOS networking (optional)
+
+All components use Flux v2 HelmRelease resources with targeted namespaces and system node scheduling.
 
 ## Common Development Commands
 
-### Build and Validation Commands
+### Kubernetes Manifest Validation
 ```bash
-# Azure Bicep validation (az-decompile/)
-npm run validate:bicep           # Validate Bicep templates
-npm run validate                 # Run all validations (lint + bicep)
+# Validate Kubernetes manifests
+kubectl apply --dry-run=client -k .
 
-# Markdown linting (az-decompile/)
-npm run lint                     # Check markdown files
-npm run lint:fix                 # Auto-fix markdown issues
+# Validate individual components
+kubectl apply --dry-run=client -k ./cert-manager
+kubectl apply --dry-run=client -k ./fortiweb-ingress
+kubectl apply --dry-run=client -k ./lacework
 
-# Terraform validation (infrastructure/)
-terraform fmt                    # Format Terraform files
-terraform validate              # Validate syntax (use init -backend=false for local testing)
-terraform init -backend=false   # Initialize without backend for local testing
-
-# Infrastructure orchestration (hydration/)
-./infrastructure.sh              # Initialize entire platform
-./infrastructure.sh --initialize # Explicit initialization
-./infrastructure.sh --destroy    # Tear down environment
-./infrastructure.sh --sync-forks # Synchronize repository forks
+# Check Kustomize build output
+kustomize build .
+kustomize build ./cert-manager
 ```
 
-### Platform Management Commands
+### GitOps Deployment Commands
 ```bash
-# Hydration system operations
-./infrastructure.sh --deploy-keys      # Update SSH deploy keys
-./infrastructure.sh --htpasswd         # Change documentation password
-./infrastructure.sh --management-ip    # Update management IP
-./infrastructure.sh --hub-passwd       # Change Fortiweb password
-./infrastructure.sh --cloudshell-secrets # Update CloudShell secrets
+# These commands are typically run by Flux, but useful for troubleshooting
 
-# Kubernetes access (after deployment)
-az aks get-credentials --resource-group 40docs --name 40docs_k8s-cluster_eastus --overwrite-existing
+# Check Flux status
+flux get all
+flux get helmreleases -A
+
+# Force reconciliation
+flux reconcile source git infrastructure
+flux reconcile helmrelease cert-manager -n cluster-config
+flux reconcile helmrelease fortiweb-ingress-controller -n cluster-config
+
+# Suspend/resume deployments
+flux suspend hr cert-manager -n cluster-config
+flux resume hr cert-manager -n cluster-config
 ```
 
-## Architecture and Repository Structure
+### Infrastructure Status Commands
+```bash
+# Check deployed infrastructure components
+kubectl get pods -n cert-manager
+kubectl get pods -n fortiweb-ingress  
+kubectl get pods -n lacework-agent
 
-### Multi-Repository Ecosystem
-- **Control Hub**: This `.github` repository orchestrates the entire platform
-- **Content Repositories**: `references/`, `theme/`, `landing-page/` for documentation
-- **Infrastructure**: `infrastructure/`, `manifests-infrastructure/`, `manifests-applications/`
-- **Build System**: `docs-builder/`, `mkdocs/`, `helm-charts/`
-- **Security Labs**: `lab-forticnapp-*`, `container-security-demo/`
-- **DevContainers**: `devcontainer-features/`, `devcontainer-templates/`
-- **Specialized**: `az-decompile/`, `fortiweb-ingress/`, `video-*`, `tts-microservices/`
+# Check Helm releases
+helm list -A | grep -E "(cert-manager|fortiweb|reloader)"
 
-### Key Configuration Files
-- `hydration/config.json`: Central configuration for entire platform
-- `co-pilot.instructions.md`: Copilot guidance for multi-repo workspace
-- Each subfolder has its own `.git` directory and should be treated as separate repository
+# Validate certificates
+kubectl get certificates -A
+kubectl describe certificate <cert-name> -n <namespace>
+```
 
-### Infrastructure Architecture
-- **Hub-Spoke Network**: Centralized FortiWeb NVA for security inspection
-- **Azure Kubernetes Service**: Production AKS cluster with GitOps (Flux)
-- **Multi-Environment**: Development/staging/production configurations
-- **Security-First**: Lacework monitoring, cert-manager, RBAC enabled
-- **Application-Specific Resources**: Each app gets dedicated public IP via FortiWeb VIP
-- **DNS Integration**: Automatic CNAME record creation for application access
+## Architecture and Component Structure
 
-## Important Coding Guidelines
+### GitOps Deployment Pattern
+- **Kustomize Base**: Root kustomization.yaml orchestrates all infrastructure components  
+- **Flux HelmReleases**: Each component uses Flux v2 HelmRelease for automated deployment
+- **Namespace Strategy**: Components deploy to dedicated namespaces (cert-manager, fortiweb-ingress, lacework-agent)
+- **Node Targeting**: All components use node selectors and tolerations for system pool scheduling
 
-### Multi-Repository Considerations
-- **Separate Repositories**: Each top-level folder is independent - don't assume monorepo structure
-- **Individual Commits**: Make changes and commit in context of correct sub-repository
-- **No Cross-Repo Dependencies**: Avoid creating dependencies unless explicitly instructed
-- **Repository-Specific Rules**: Use sub-repo instructions when present
+### Key Configuration Patterns
 
-### Terraform Standards (infrastructure/)
-- **Variable Naming**: Always use `snake_case` (underscores), never `kebab-case` (hyphens)
-- **Resource Naming**: Use underscores for consistency with Terraform conventions
-- **Template Variables**: All cloud-init template variables use lowercase `snake_case`
-- **Local Testing**: Use `terraform init -backend=false` for local validation
-- **Provider Versions**: All providers have specific version constraints (see terraform.tf:14-63)
-- **Variable Validation**: Extensive input validation with regex patterns for IPs, subnets, and domains
+#### HelmRelease Structure
+```yaml
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: component-name
+  namespace: cluster-config
+spec:
+  targetNamespace: component-namespace  # Where component actually runs
+  chart:
+    spec:
+      chart: helm-chart-name
+      version: "x.y.z"              # Pinned versions for stability
+      sourceRef:
+        kind: HelmRepository
+        name: repository-name
+  values:
+    # System pool scheduling (standard pattern)
+    tolerations:
+      - key: "CriticalAddonsOnly"
+        operator: "Equal" 
+        value: "true"
+        effect: "NoSchedule"
+    nodeSelector:
+      system-pool: "true"
+```
 
-### Security Best Practices
-- **No Secrets in Code**: Never commit API keys, tokens, or credentials
-- **Defensive Programming**: Validate inputs and handle errors gracefully
-- **Secure Operations**: Use restrictive permissions (600/700) for temporary files
-- **Repository Validation**: Check repository existence before setting secrets
+#### Security Configurations
+- **cert-manager**: Uses Azure Workload Identity for DNS-01 challenges
+- **Lacework**: Privileged DaemonSet with extensive host mounts for security monitoring
+- **FortiWeb**: Ingress controller with security-focused traffic inspection
 
-## Platform Orchestration
+## Infrastructure Components
 
-### Hydration System
-The `infrastructure.sh` script (2,100+ lines) is the master orchestrator that:
-- Manages Azure service principals and storage accounts
-- Generates SSH deploy keys for all repositories
-- Configures GitHub secrets and variables across repositories
-- Deploys complete Kubernetes infrastructure via Terraform
-- Implements retry logic with exponential backoff
-- Provides enhanced logging with visual symbols (❌ ⚠️ ✅ •)
+### Core Services
+| Component | Purpose | Namespace | Chart Version |
+|-----------|---------|-----------|---------------|
+| cert-manager | TLS certificate automation | cert-manager | 1.16.1 |
+| fortiweb-ingress | Security-focused ingress | fortiweb-ingress | 2.0.1 |
+| lacework | Runtime security monitoring | lacework-agent | Latest |
+| reloader | Config/secret auto-reload | default | Latest |
+| ingress-helper | Ingress utilities | default | Latest |
 
-### GitOps Workflow
-- **Flux v2**: Automated application deployment and management
-- **Multi-Repository Builds**: SSH key injection for secure cross-repo access
-- **Container Builds**: MkDocs documentation builds with theme inheritance
-- **Automated Deployments**: Terraform via GitHub Actions workflows
+### Optional Components  
+| Component | Purpose | Status | Notes |
+|-----------|---------|--------|-------|
+| gpu-operator | NVIDIA GPU support | Available | For ML/AI workloads |
+| cfos | Container FortiOS | Available | Advanced networking |
 
-### Certificate Management
-- **cert-manager**: Automated TLS certificate provisioning
-- **Let's Encrypt**: Production and staging certificate issuers
-- **Azure DNS**: DNS-01 challenge resolution
-- **Workload Identity**: Secure Azure authentication
+## Important Guidelines
 
-## Testing and Validation
+### Manifest Standards
+- **YAML Best Practices**: Use proper indentation, consistent formatting, and meaningful names
+- **Version Pinning**: Always specify explicit chart versions in HelmRelease resources
+- **Resource Limits**: Include resource requests/limits for production workloads
+- **Security Context**: Apply appropriate security contexts and avoid privileged containers when possible
+- **Documentation**: Comment complex configurations and include references to upstream docs
 
-### Local Development
-- Never run `terraform plan/apply` locally - requires GitHub secrets
-- Use `terraform init -backend=false` for syntax validation only
-- Test changes in fork environment before submitting to main
-- Validate all Markdown with markdownlint before committing
+### System Pool Targeting
+All infrastructure components should use consistent node scheduling patterns:
+```yaml
+tolerations:
+  - key: "CriticalAddonsOnly"
+    operator: "Equal"
+    value: "true" 
+    effect: "NoSchedule"
+nodeSelector:
+  system-pool: "true"
+```
 
-### CI/CD Pipeline
-1. **Format/Lint**: Terraform fmt, markdownlint validation
-2. **Security**: Lacework IaC scanning, dependency checks
-3. **Deployment**: Automated infrastructure provisioning
-4. **Verification**: Post-deployment health checks
-
-### Auto-Approval Workflow
-- Documentation-only PRs are auto-approved for repository owners
-- Triggers on changes to `*.md`, `docs/`, and copilot instructions
-- Waits for all status checks to pass before auto-merge
-
-## Security and Compliance
-
-### Network Security
-- All traffic flows through FortiWeb NVA for inspection
-- Hub-spoke topology with network segmentation
-- Network Security Groups with granular controls
-- Private endpoints for Azure services
-
-### Kubernetes Security
-- RBAC enabled with Azure AD integration
-- Lacework agent for runtime protection and monitoring
-- Network policies for pod-to-pod communication control
-- Workload Identity for secure Azure service authentication
-
-### Current Critical Issue
-⚠️ **CRITICAL**: NVA deployment is NOT highly available - single point of failure exists
-- Only one FortiWeb instance deployed
-- Using availability sets instead of availability zones
-- No load balancing or automated failover
-
-## Key Applications
-
-| Application | Purpose | Status | Namespace | Terraform File |
-|-------------|---------|--------|-----------|----------------|
-| docs | Documentation hosting | ✅ Running | docs | spoke-k8s_application-docs.tf |
-| dvwa | Security testing | ✅ Running | dvwa | spoke-k8s_application-dvwa.tf |
-| extractor | Data processing | ✅ Running | extractor | spoke-k8s_application-extractor.tf |
-| ollama | AI/ML workloads | ⏸️ Disabled | N/A | spoke-k8s_application-ollama.tf |
-| artifacts | Build artifacts | ⏸️ Disabled | N/A | spoke-k8s_application-artifacts.tf |
-| video | Media streaming | ⏸️ Disabled | N/A | spoke-k8s_application-video.tf |
+### Secret Management
+- **Never commit secrets**: Use Flux's secret management or external secret operators
+- **Reference sealed secrets**: Use SealedSecrets or External Secrets Operator for sensitive data
+- **Azure Integration**: Leverage Azure Workload Identity where possible
 
 ## Troubleshooting
 
-### Authentication Issues
+### Common Issues
+
+#### Certificate Problems
 ```bash
-gh auth login                    # Re-authenticate GitHub CLI
-az login --use-device-code      # Re-authenticate Azure CLI
+# Check certificate status
+kubectl get certificates -A
+kubectl describe certificate <name> -n <namespace>
+
+# Check cert-manager logs
+kubectl logs -n cert-manager deployment/cert-manager
+
+# Force certificate renewal
+kubectl annotate certificate <name> -n <namespace> cert-manager.io/issue-temporary-certificate=true
 ```
 
-### Infrastructure Issues
+#### Ingress Controller Issues
 ```bash
-# Accept marketplace terms for FortiWeb
-az vm image terms accept --urn "fortinet:fortinet_fortiweb-vm_v5:fortinet_fw-vm:latest"
+# Check FortiWeb ingress controller
+kubectl get pods -n fortiweb-ingress
+kubectl logs -n fortiweb-ingress deployment/fortiweb-ingress-controller
 
-# Check resource provider registration
-az provider register --namespace Microsoft.ContainerService
+# Validate ingress configurations
+kubectl get ingress -A
+kubectl describe ingress <name> -n <namespace>
 ```
 
-### GitOps Issues
+#### Flux Reconciliation Problems
 ```bash
-# Check Flux status
-kubectl get pods -n flux-system
-flux reconcile source git infrastructure
+# Check Flux source status
+flux get sources git
+
+# Check HelmRelease status
+flux get helmreleases -A
+
+# Debug failed reconciliation
+kubectl describe helmrelease <name> -n cluster-config
 ```
 
-### Common Exit Codes
-- `0`: Success
-- `1`: General failure  
-- `2`: Configuration error
-- `3`: Authentication error
-- `4`: Network error
+#### Lacework Agent Issues
+```bash
+# Check DaemonSet status
+kubectl get ds lacework -n lacework-agent
 
-## Additional Notes
+# View agent logs
+kubectl logs -n lacework-agent ds/lacework
 
-- **Bash Compatibility**: Scripts work with macOS system bash (3.2.57) and modern versions
-- **Cross-Platform**: Supports both macOS and Linux development environments
-- **Enhanced Logging**: Visual symbols for different message types improve readability
-- **Retry Logic**: Standardized retry patterns with exponential backoff throughout
-- **Input Validation**: Comprehensive validation for emails, GitHub orgs, Azure resources, DNS zones
+# Verify secret configuration
+kubectl get secret lacework-agent-token -n lacework-agent -o yaml
+```
 
-## Repository Security
+## Development Best Practices
 
-### Branch Protection
-- All github repository main branches are protected and require a pull request
+### Testing Changes
+```bash
+# Test manifest syntax before committing
+kubectl apply --dry-run=client -k .
+
+# Test individual component changes
+kubectl apply --dry-run=client -f ./cert-manager/HelmRelease.yaml
+
+# Validate Kustomize output
+kustomize build . | kubectl apply --dry-run=client -f -
+```
+
+### Version Management
+- Always pin specific chart versions in HelmRelease resources
+- Update versions incrementally and test in development environment first
+- Monitor for security updates in upstream Helm charts
+- Document version upgrade reasons in commit messages
+
+### GitOps Integration
+This repository is managed by Flux v2 GitOps. Changes pushed to the main branch are automatically applied to the cluster:
+- **Source Controller**: Monitors this Git repository for changes
+- **Helm Controller**: Manages HelmRelease resources and chart installations
+- **Kustomize Controller**: Applies Kustomized manifests
+
+### Security Considerations
+- All infrastructure components run on system node pool with appropriate tolerations
+- Lacework DaemonSet requires privileged access for security monitoring
+- cert-manager uses Azure Workload Identity for DNS challenge authentication
+- FortiWeb provides ingress-level security inspection
