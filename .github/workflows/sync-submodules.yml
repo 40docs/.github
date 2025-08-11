@@ -21,6 +21,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run install.sh to sync submodules
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           chmod +x ./install.sh
           ./install.sh
