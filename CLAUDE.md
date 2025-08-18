@@ -2,6 +2,42 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Initial Authentication Requirements
+
+**MANDATORY**: When Claude Code starts in this repository, immediately verify authentication status and prompt for login if required:
+
+### GitHub Authentication Check
+1. Run `gh auth status` to verify GitHub CLI authentication
+2. If not authenticated or token expired, prompt user to run:
+   ```bash
+   gh auth login
+   ```
+3. Verify authentication was successful before proceeding with any GitHub operations
+
+### Azure Authentication Check
+1. Run `az account show` to verify Azure CLI authentication and current subscription
+2. If not authenticated, prompt user to run:
+   ```bash
+   az login --use-device-code
+   ```
+3. After authentication, verify the default subscription is set correctly:
+   ```bash
+   az account list --output table
+   ```
+4. If the default subscription is not "Canada-PAYG", prompt user to set it:
+   ```bash
+   az account set --subscription "Canada-PAYG"
+   ```
+5. Confirm the correct subscription is now active:
+   ```bash
+   az account show --query "name" -o tsv
+   ```
+
+### Authentication Validation
+- Both GitHub and Azure authentication must be confirmed before proceeding with any platform operations
+- If authentication fails or times out, provide clear instructions and retry steps
+- Document any authentication issues in the session for troubleshooting
+
 ## Repository Overview
 
 This is the **40docs** platform - an enterprise-grade Documentation as Code ecosystem that manages 25+ interconnected repositories through Git submodules and automation. It's a multi-repository collection where each top-level folder represents a separate GitHub repository, not a monorepo structure.
