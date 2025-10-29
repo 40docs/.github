@@ -43,7 +43,6 @@ The **40docs platform** is a comprehensive multi-repository ecosystem that manag
 - **[dotfiles](https://github.com/40docs/dotfiles)** - Configuration files and development environment setup
 
 ### Security & Labs
-- **[pebcak](https://github.com/40docs/pebcak)** - FortiCNAPP OPAL educational lab with three-phase Policy as Code progression
 - **[docs-forticnapp-code-security](https://github.com/40docs/docs-forticnapp-code-security)** - Educational content for SCA, IaC, and SAST security practices
 - **[lab-forticnapp-code-security](https://github.com/40docs/lab-forticnapp-code-security)** - Hands-on security lab environments
 - **[container-security-demo](https://github.com/40docs/container-security-demo)** - Container security demonstration and testing
